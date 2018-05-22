@@ -30,16 +30,15 @@ public class OnlineActivity extends BaseActivity {
 
     @Override
     public int getStatusBarColor() {
-        return R.color.color_online_status_bar;
+        return R.color.color_free_speech_red;
     }
 
     @Override
     public void initComponents() {
-        mTabGenre = findViewById(R.id.tabs);
+        mTabGenre = findViewById(R.id.tab_online);
         mPagerGenre = findViewById(R.id.view_pager_genre);
         mPagerAdapter = new OnlinePagerAdapter(getSupportFragmentManager());
         mPagerGenre.setAdapter(mPagerAdapter);
         mTabGenre.setupWithViewPager(mPagerGenre);
-        mPagerGenre.setCurrentItem(0);
     }
 }
