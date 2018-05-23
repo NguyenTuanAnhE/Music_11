@@ -27,7 +27,7 @@
         android:id="@+id/view_pager_genre"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/colorAccent"
+        android:background="@android:color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tab_online"
