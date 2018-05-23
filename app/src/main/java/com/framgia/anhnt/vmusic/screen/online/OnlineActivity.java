@@ -8,7 +8,7 @@ import android.support.v4.view.ViewPager;
 import com.framgia.anhnt.vmusic.BaseActivity;
 import com.framgia.anhnt.vmusic.R;
 
-public class OnlineActivity extends BaseActivity {
+public class OnlineActivity extends BaseActivity implements OnlineContract.View {
     private TabLayout mTabGenre;
     private ViewPager mPagerGenre;
     private OnlinePagerAdapter mPagerAdapter;

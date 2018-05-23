@@ -7,10 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.BaseActivity;
 import com.framgia.anhnt.vmusic.data.model.Genre;
-import com.framgia.anhnt.vmusic.data.source.GenreDataSource;
-import com.framgia.anhnt.vmusic.data.repository.GenreRepository;
-import com.framgia.anhnt.vmusic.data.source.local.GenreLocalDataSource;
-import com.framgia.anhnt.vmusic.data.source.remote.GenreRemoteDataSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +34,7 @@ public class MainActivity extends BaseActivity implements MainContract.View {
 
     @Override
     public int getStatusBarColor() {
-        return R.color.color_online_status_bar;
+        return R.color.color_free_speech_red;
     }
 
     @Override
