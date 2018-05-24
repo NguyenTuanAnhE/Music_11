@@ -3,9 +3,8 @@ package com.framgia.anhnt.vmusic;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
-import com.framgia.anhnt.vmusic.utils.ColorUtil;
+import com.framgia.anhnt.vmusic.utils.ColorUtils;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -13,12 +12,12 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getContentLayout());
+        ColorUtils.changeStatusBarColor(this, getStatusBarColor());
+        initComponents();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(showHomeEnable());
             getSupportActionBar().setDisplayShowHomeEnabled(showHomeEnable());
         }
-        ColorUtil.changeStatusBarColor(this, getStatusBarColor());
-        initComponents();
     }
 
     protected abstract boolean showHomeEnable();
