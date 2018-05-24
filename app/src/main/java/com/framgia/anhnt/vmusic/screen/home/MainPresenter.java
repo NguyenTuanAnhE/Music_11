@@ -1,9 +1,6 @@
 package com.framgia.anhnt.vmusic.screen.home;
 
-import android.util.Log;
-
-import com.framgia.anhnt.vmusic.data.model.Genre;
-import com.framgia.anhnt.vmusic.data.repository.GenreRepository;
+import com.framgia.anhnt.vmusic.data.repositories.GenreRepository;
 import com.framgia.anhnt.vmusic.data.source.GenreDataSource;
 import com.framgia.anhnt.vmusic.data.source.local.GenreLocalDataSource;
 import com.framgia.anhnt.vmusic.data.source.remote.GenreRemoteDataSource;

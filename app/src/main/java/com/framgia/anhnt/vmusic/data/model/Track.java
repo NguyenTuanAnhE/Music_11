@@ -186,4 +186,78 @@ public class Track implements Parcelable {
         public static String LIKES_COUNT = "likes_count";
         public static String USERNAME = "username";
     }
+
+    public static class TrackBuilder {
+
+        private Track mTrack;
+
+        public TrackBuilder() {
+            mTrack = new Track();
+        }
+
+        public TrackBuilder setArtworkUrl(String artworkUrl) {
+            mTrack.setArtworkUrl(artworkUrl);
+            return this;
+        }
+
+        public TrackBuilder setDescription(String description) {
+            mTrack.setDescription(description);
+            return this;
+        }
+
+        public TrackBuilder setDownloadUrl(String downloadUrl) {
+            mTrack.setDownloadUrl(downloadUrl);
+            return this;
+        }
+
+        public TrackBuilder setDownloadable(boolean downloadable) {
+            mTrack.setDownloadable(downloadable);
+            return this;
+        }
+
+        public TrackBuilder setDuration(long duration) {
+            mTrack.setDuration(duration);
+            return this;
+        }
+
+        public TrackBuilder setPlaybackCount(int playbackCount) {
+            mTrack.setPlaybackCount(playbackCount);
+            return this;
+        }
+
+        public TrackBuilder setId(int id) {
+            mTrack.setId(id);
+            return this;
+        }
+
+        public TrackBuilder setTitle(String title) {
+            mTrack.setTitle(title);
+            return this;
+        }
+
+        public TrackBuilder setUri(String uri) {
+            mTrack.setUri(uri);
+            return this;
+        }
+
+        public TrackBuilder setUsername(String username) {
+            mTrack.setUsername(username);
+            return this;
+        }
+
+        public TrackBuilder setAvatarUrl(String avatarUrl) {
+            mTrack.setAvatarUrl(avatarUrl);
+            return this;
+        }
+
+        public TrackBuilder setLikesCount(int likesCount) {
+            mTrack.setLikesCount(likesCount);
+            return this;
+        }
+
+        public Track build() {
+            return mTrack;
+        }
+    }
+
 }
