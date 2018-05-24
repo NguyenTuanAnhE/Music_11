@@ -11,11 +11,11 @@ public interface TrackDataSource {
 
     interface RemoteDataSource {
         void getRemoteTrack(String genre, int limit, int offset,
-                            OnFetchDataListener<Track> listener);
+                            OnFetchDataListener<List<Track>> listener);
     }
 
     interface OnFetchDataListener<T> {
-        void onFetchDataSuccess(List<T> data);
+        void onFetchDataSuccess(T data);
 
         void onFetchDataFail(String message);
     }
