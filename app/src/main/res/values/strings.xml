@@ -9,4 +9,5 @@
     <string name="genre_country">Country</string>
     <string name="search">Search</string>
     <string name="online">Online</string>
+    <string name="player">Now Playing</string>
 </resources>
