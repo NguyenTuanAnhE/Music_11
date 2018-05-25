@@ -10,7 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class ColorUtil {
+public class ColorUtils {
 
     public static void changeStatusBarColor(Activity activity, int color) {
         Window window = activity.getWindow();

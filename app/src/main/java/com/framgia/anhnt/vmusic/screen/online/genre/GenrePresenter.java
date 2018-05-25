@@ -1,5 +1,7 @@
 package com.framgia.anhnt.vmusic.screen.online.genre;
 
+import android.util.Log;
+
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.data.repositories.TrackRepository;
 import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
@@ -41,6 +43,7 @@ public class GenrePresenter implements GenreContract.Presenter,
 
     @Override
     public void onFetchDataSuccess(List<Track> data) {
+        Log.d("TAG", "onFetchDataSuccess: "+data.get(0).getTitle());
         mView.showListTrack(data);
     }
 

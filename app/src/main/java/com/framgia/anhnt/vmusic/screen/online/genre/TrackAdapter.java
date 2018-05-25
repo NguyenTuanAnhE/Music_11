@@ -19,24 +19,31 @@ import java.util.List;
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> {
     private LayoutInflater mInflater;
     private List<Track> mTracks;
+    private OnTrackClickListener mListener;
 
     public TrackAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
         mTracks = new ArrayList<>();
     }
 
-    public void addData(List<Track> tracks) {
+    public void setListener(OnTrackClickListener listener) {
+        mListener = listener;
+    }
+
+    public void updateData(List<Track> tracks) {
         if (tracks == null) {
             return;
         }
-        mTracks.addAll(tracks);
-        notifyItemRangeInserted(mTracks.size(), tracks.size());
+        mTracks.clear();
+        mTracks = tracks;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(mInflater.inflate(R.layout.item_track_online, parent, false));
+        return new ViewHolder(mInflater.inflate(R.layout.item_track_online, parent,
+                false), mListener);
     }
 
     @Override
@@ -50,19 +57,27 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
         return mTracks == null ? 0 : mTracks.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView mImageAlbumCover;
         private ImageView mImageDownload;
         private TextView mTextArtist;
         private TextView mTextTitle;
+        private OnTrackClickListener mListener;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(View itemView, OnTrackClickListener listener) {
             super(itemView);
 
             mImageAlbumCover = itemView.findViewById(R.id.image_album_cover);
             mImageDownload = itemView.findViewById(R.id.image_download);
             mTextArtist = itemView.findViewById(R.id.text_track_artist);
             mTextTitle = itemView.findViewById(R.id.text_track_title);
+            this.mListener = listener;
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onClick(getAdapterPosition());
+                }
+            });
         }
 
         void bindData(Track track) {
@@ -75,5 +90,20 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
                     .load(track.getArtworkUrl())
                     .into(mImageAlbumCover);
         }
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.image_download:
+                    mListener.onClickDownload(getAdapterPosition());
+                    break;
+            }
+        }
+    }
+
+    public interface OnTrackClickListener {
+        void onClick(int position);
+
+        void onClickDownload(int position);
     }
 }

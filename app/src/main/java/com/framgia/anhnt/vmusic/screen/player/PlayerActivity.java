@@ -1,15 +1,29 @@
 package com.framgia.anhnt.vmusic.screen.player;
 
+import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.framgia.anhnt.vmusic.BaseActivity;
 import com.framgia.anhnt.vmusic.R;
+import com.framgia.anhnt.vmusic.data.model.Track;
+import com.framgia.anhnt.vmusic.data.repositories.TrackRepository;
+import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
+import com.framgia.anhnt.vmusic.data.source.local.TrackLocalDataSource;
+import com.framgia.anhnt.vmusic.data.source.remote.TrackRemoteDataSource;
+import com.framgia.anhnt.vmusic.utils.Constants;
+import com.framgia.anhnt.vmusic.utils.GenreType;
+import com.framgia.anhnt.vmusic.utils.IntentKey;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerActivity extends BaseActivity implements PlayerContract.View {
 
@@ -65,11 +79,43 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View 
         setSupportActionBar(mToolbar);
         mToolbar.setTitle(R.string.player);
 
-        mPresenter = new PlayerPresenter();
+        TrackDataSource.LocalDataSource localDataSource =
+                TrackLocalDataSource.getInstance();
+        TrackDataSource.RemoteDataSource remoteDataSource =
+                TrackRemoteDataSource.getInstance();
+        TrackRepository trackRepository =
+                TrackRepository.getInstance(localDataSource, remoteDataSource);
+        mPresenter = new PlayerPresenter(trackRepository);
         mPresenter.setView(this);
 
         mPlayerAdapter = new PlayerAdapter(this);
         mRecyclerPlayer.setAdapter(mPlayerAdapter);
         mRecyclerPlayer.setLayoutManager(new LinearLayoutManager(this));
+
+        getListTrack();
     }
+
+    private void getListTrack() {
+        Intent intent = getIntent();
+        if (intent == null) {
+            return;
+        }
+        int position = intent.getIntExtra(IntentKey.SELECTED_POSITION, 0);
+        ArrayList<Track> tracks = intent.getParcelableArrayListExtra(IntentKey.PARCELABLE_LIST);
+        Track track = tracks.get(position);
+        updatePlayingTrack(track);
+
+//        String genre = intent.getStringExtra(GenreType.ARGUMENT_GENRE);
+//        mPresenter.loadTrackByGenre(genre,
+//                Constants.ApiRequest.LIMIT_VALUE, Constants.ApiRequest.OFFSET_VALUE);
+    }
+
+    private void updatePlayingTrack(Track track) {
+        mTextTitle.setText(track.getTitle());
+        mTextArtist.setText(track.getUsername());
+        Glide.with(this)
+                .load(track.getArtworkUrl())
+                .into(mImageArtwork);
+    }
+
 }
