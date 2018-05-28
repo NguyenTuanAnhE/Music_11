@@ -25,6 +25,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 })
 
 public @interface GenreType {
+    String MY_MUSIC = "My Music";
     String TAB_ALL_MUSIC = "all-music";
     String TAB_ALL_AUDIO = "all-audio";
     String TAB_CLASSIC = "classical";

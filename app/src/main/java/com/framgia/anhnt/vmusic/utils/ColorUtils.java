@@ -10,7 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class ColorUtil {
+public class ColorUtils {
 
     public static void changeStatusBarColor(Activity activity, int color) {
         Window window = activity.getWindow();
@@ -21,6 +21,12 @@ public class ColorUtil {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(ContextCompat.getColor(activity, color));
         }
+    }
+
+    public static void setFullScreen(Activity activity) {
+        activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
 }

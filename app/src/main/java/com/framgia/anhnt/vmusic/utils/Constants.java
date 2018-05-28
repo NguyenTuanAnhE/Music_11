@@ -6,6 +6,7 @@ public interface Constants {
         String HOST = "https://api-v2.soundcloud.com/";
         String PARAMETER_GENRE = "charts?kind=top&genre=soundcloud%3Agenres%3A";
         String CLIENT_ID = "client_id";
+        String PARAMETER_STREAM = "stream";
         String LIMIT = "limit";
         String OFFSET = "offset";
         String REQUEST_METHOD = "GET";
