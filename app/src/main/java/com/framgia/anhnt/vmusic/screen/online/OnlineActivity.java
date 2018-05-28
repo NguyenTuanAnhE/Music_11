@@ -12,7 +12,6 @@ import android.view.View;
 import com.framgia.anhnt.vmusic.BaseActivity;
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.service.MediaService;
-import com.framgia.anhnt.vmusic.utils.GenreType;
 import com.framgia.anhnt.vmusic.utils.TabPosition;
 import com.framgia.anhnt.vmusic.utils.TrackUtils;
 
@@ -95,7 +94,7 @@ public class OnlineActivity extends BaseActivity implements OnlineContract.View,
     private void setSelectedTab() {
         Intent intent = getIntent();
         if (intent != null) {
-            String genre = intent.getStringExtra(GenreType.ARGUMENT_GENRE);
+            String genre = intent.getStringExtra(ARGUMENT_GENRE);
             mPagerGenre.setCurrentItem(TrackUtils.getTabPosition(genre));
         }
     }

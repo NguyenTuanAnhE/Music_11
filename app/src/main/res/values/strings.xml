@@ -10,4 +10,7 @@
     <string name="search">Search</string>
     <string name="online">Online</string>
     <string name="player">Now Playing</string>
+    <string name="error_empty_list">Empty List</string>
+    <string name="error_end_of_list">End of List</string>
+    <string name="loop_one">1</string>
 </resources>

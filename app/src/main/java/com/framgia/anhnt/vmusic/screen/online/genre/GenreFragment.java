@@ -48,7 +48,7 @@ public class GenreFragment extends BaseFragment implements GenreContract.View, T
 
     @Override
     protected void initComponents() {
-        mProgressLoad = getView().findViewById(R.id.progress_track);
+        mProgressLoad = getView().findViewById(R.id.progress_loading);
         mRecyclerTrack = getView().findViewById(R.id.recycler_track);
         mTrackAdapter = new TrackAdapter(getContext());
         mTrackAdapter.setListener(this);
