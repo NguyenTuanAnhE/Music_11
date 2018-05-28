@@ -23,10 +23,20 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.ViewHolder
         mTracks = new ArrayList<>();
     }
 
+    public void addData(List<Track> tracks) {
+        if (tracks == null) {
+            return;
+        }
+        mTracks.clear();
+        mTracks.addAll(tracks);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(mInflater.inflate(R.layout.item_player, parent, false));
+        return new ViewHolder(mInflater.inflate(R.layout.item_player, parent,
+                false));
     }
 
     @Override
@@ -57,7 +67,7 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.ViewHolder
             if (track == null) {
                 return;
             }
-            mTextPosition.setText(getAdapterPosition() + 1);
+            mTextPosition.setText(String.valueOf(getAdapterPosition() + 1));
             mTextTitle.setText(track.getTitle());
             mTextDuration.setText(String.valueOf(track.getDuration()));
         }

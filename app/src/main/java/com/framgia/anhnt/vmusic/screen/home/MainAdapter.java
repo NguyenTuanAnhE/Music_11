@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.data.model.Genre;
+import com.framgia.anhnt.vmusic.screen.online.genre.TrackAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,16 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     private Context mContext;
     private LayoutInflater mInflater;
     private List<Genre> mGenres;
+    private OnGenreClickListener mListener;
 
-    public MainAdapter(Context context, List<Genre> genres) {
+    public MainAdapter(Context context) {
         mContext = context;
-        mGenres = genres;
+        mGenres = new ArrayList<>();
         mInflater = LayoutInflater.from(mContext);
+    }
+
+    public void setListener(OnGenreClickListener listener) {
+        mListener = listener;
     }
 
     public void updateGenres(List<Genre> genres) {
@@ -36,7 +42,8 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(mInflater.inflate(R.layout.item_home, parent, false));
+        return new ViewHolder(mInflater.inflate(R.layout.item_home, parent,
+                false), mListener);
     }
 
     @Override
@@ -51,30 +58,56 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         return mGenres == null ? 0 : mGenres.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
 
         private TextView mTextGenre;
         private TextView mTextTrack;
         private ImageView mImagePlay;
         private ImageView mImageCover;
+        private OnGenreClickListener mListener;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(View itemView, OnGenreClickListener listener) {
             super(itemView);
 
             mTextGenre = itemView.findViewById(R.id.text_home);
             mTextTrack = itemView.findViewById(R.id.text_track);
             mImagePlay = itemView.findViewById(R.id.image_play);
             mImageCover = itemView.findViewById(R.id.image_cover);
+            mListener = listener;
+            mImageCover.setOnClickListener(this);
+            mImagePlay.setOnClickListener(this);
         }
 
         void bindData(Genre genre) {
-            if (genre != null) {
-                mTextGenre.setText(genre.getTitle());
-                mTextTrack.setText(genre.getTrack());
-                Glide.with(mImageCover.getContext())
-                        .load(genre.getImage())
-                        .into(mImageCover);
+            if (genre == null) {
+                return;
+            }
+            mTextGenre.setText(genre.getTitle());
+            mTextTrack.setText(genre.getTrack());
+            Glide.with(mImageCover.getContext())
+                    .load(genre.getImage())
+                    .into(mImageCover);
+        }
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.image_cover:
+                    mListener.onItemClick(mTextGenre.getText().toString());
+                    break;
+                case R.id.image_play:
+                    mListener.onPlayClick(getAdapterPosition());
+                    break;
+                default:
+                    break;
             }
         }
+    }
+
+    public interface OnGenreClickListener {
+        void onItemClick(String genre);
+
+        void onPlayClick(int position);
     }
 }
