@@ -26,11 +26,11 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public @interface GenreType {
     String MY_MUSIC = "My Music";
-    String TAB_ALL_MUSIC = "all-music";
-    String TAB_ALL_AUDIO = "all-audio";
-    String TAB_CLASSIC = "classical";
-    String TAB_AMBIENT = "ambient";
-    String TAB_COUNTRY = "country";
+    String TAB_ALL_MUSIC = "All-Music";
+    String TAB_ALL_AUDIO = "All-Audio";
+    String TAB_CLASSIC = "Classical";
+    String TAB_AMBIENT = "Ambient";
+    String TAB_COUNTRY = "Country";
     String TAB_ALTER_NATIVE_ROCK = "AlterNativeRock";
     String ARGUMENT_GENRE = "argument genre";
 }

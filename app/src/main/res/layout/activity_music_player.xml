@@ -31,8 +31,8 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view_top"
-        app:riv_border_width="@dimen/dp_2"
         app:riv_border_color="@android:color/white"
+        app:riv_border_width="@dimen/dp_2"
         app:riv_corner_radius="@dimen/dp_8"
         app:riv_mutate_background="true"
         app:riv_tile_mode="repeat" />
@@ -91,12 +91,22 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
 
+    <ProgressBar
+        android:id="@+id/progress_loading"
+        android:layout_width="@dimen/dp_32"
+        android:layout_height="@dimen/dp_32"
+        android:layout_marginTop="@dimen/dp_16"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_artist" />
+
     <ImageButton
         android:id="@+id/image_play_pause"
         android:layout_width="@dimen/dp_32"
         android:layout_height="@dimen/dp_32"
         android:layout_marginTop="@dimen/dp_16"
         android:background="@drawable/ic_pause"
+        android:visibility="invisible"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_artist" />
@@ -138,6 +148,19 @@
         android:layout_marginLeft="@dimen/sp_24"
         android:layout_marginTop="@dimen/dp_16"
         android:background="@drawable/ic_loop"
+        app:layout_constraintLeft_toRightOf="@id/image_next"
+        app:layout_constraintTop_toBottomOf="@id/text_artist" />
+
+    <TextView
+        android:id="@+id/text_loop_one"
+        android:layout_width="@dimen/dp_32"
+        android:layout_height="@dimen/dp_32"
+        android:layout_marginLeft="@dimen/sp_24"
+        android:layout_marginTop="@dimen/dp_16"
+        android:gravity="center"
+        android:text="@string/loop_one"
+        android:textColor="@color/color_ocean_blue"
+        android:visibility="invisible"
         app:layout_constraintLeft_toRightOf="@id/image_next"
         app:layout_constraintTop_toBottomOf="@id/text_artist" />
 

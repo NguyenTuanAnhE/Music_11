@@ -10,4 +10,6 @@
     <color name="color_red_tomato">#FF5252</color>
     <color name="color_white_transparent">#5affffff</color>
     <color name="color_golden_yellow">#ffea00</color>
+    <color name="color_ocean_blue">#006DF0</color>
+    <color name="color_white">#FFFFFF</color>
 </resources>

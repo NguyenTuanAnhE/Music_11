@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.utils.Constants;
+import com.framgia.anhnt.vmusic.utils.TrackUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,7 +73,7 @@ public class TrackRemoteHandle {
                 .setLikesCount(jsonObject.optInt(Track.TrackEntry.LIKES_COUNT))
                 .setPlaybackCount(jsonObject.optInt(Track.TrackEntry.PLAYBACK_COUNT))
                 .setTitle(jsonObject.optString(Track.TrackEntry.TITLE))
-                .setUri(jsonObject.optString(Track.TrackEntry.URI))
+                .setUri(TrackUtils.makeStreamUrl(jsonObject.optString(Track.TrackEntry.URI)))
                 .build();
 
         return track;
