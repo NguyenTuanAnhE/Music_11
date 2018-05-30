@@ -81,6 +81,7 @@ public class MediaNotification implements TrackIconRemote.OnLoadBitmapListener {
                 .setContentTitle(mTrack.getTitle())
                 .setContentText(mTrack.getUsername())
                 .setContentIntent(getContentIntent())
+                .setDeleteIntent(getActionIntent(MediaService.ACTION_STOP_SERVICE))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setAutoCancel(true)
                 .setOngoing(false)

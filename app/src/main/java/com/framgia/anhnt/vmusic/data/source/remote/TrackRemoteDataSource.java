@@ -1,6 +1,7 @@
 package com.framgia.anhnt.vmusic.data.source.remote;
 
 import com.framgia.anhnt.vmusic.BuildConfig;
+import com.framgia.anhnt.vmusic.data.iterator.SearchRemoteIterator;
 import com.framgia.anhnt.vmusic.data.iterator.TrackRemoteIterator;
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
@@ -32,5 +33,11 @@ public class TrackRemoteDataSource implements TrackDataSource.RemoteDataSource {
 
         String url = TrackUtils.makeUrl(Constants.ApiRequest.HOST, params);
         new TrackRemoteIterator(listener).execute(url);
+    }
+
+    @Override
+    public void searchTrack(int limit, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
+        String url = TrackUtils.makeSearchUrl(limit, key);
+        new SearchRemoteIterator(listener).execute(url);
     }
 }

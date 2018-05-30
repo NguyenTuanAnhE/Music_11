@@ -85,9 +85,21 @@ public class TrackRemoteHandle {
         for (int i = 0; i < listTracks.length(); i++) {
             JSONObject object = listTracks.getJSONObject(i)
                     .getJSONObject(Track.TrackEntry.TRACK);
-            Track song = getTrack(object);
-            if (song != null) {
-                tracks.add(song);
+            Track track = getTrack(object);
+            if (track != null) {
+                tracks.add(track);
+            }
+        }
+        return tracks;
+    }
+
+    public List<Track> getSearchList(JSONArray jsonArray) throws JSONException {
+        List<Track> tracks = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject object = jsonArray.getJSONObject(i);
+            Track track = getTrack(object);
+            if (track != null) {
+                tracks.add(track);
             }
         }
         return tracks;

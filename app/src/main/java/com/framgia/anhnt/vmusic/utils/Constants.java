@@ -4,6 +4,7 @@ public interface Constants {
 
     interface ApiRequest {
         String HOST = "https://api-v2.soundcloud.com/";
+        String HOST_SEARCH = "http://api.soundcloud.com/tracks";
         String PARAMETER_GENRE = "charts?kind=top&genre=soundcloud%3Agenres%3A";
         String CLIENT_ID = "client_id";
         String PARAMETER_STREAM = "stream";
@@ -18,5 +19,7 @@ public interface Constants {
         int OFFSET_VALUE = 20;
         String LARGE = "-large";
         String CROP = "-crop";
+        String SEARCH_FILTER = "?filter=public";
+        String PARAMETER_SEARCH = "q";
     }
 }

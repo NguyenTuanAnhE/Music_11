@@ -3,6 +3,7 @@ package com.framgia.anhnt.vmusic.screen.online.genre;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -79,6 +80,7 @@ public class GenreFragment extends BaseFragment implements GenreContract.View, T
         mTracks = tracks;
         mTrackAdapter.updateData(mTracks);
         mProgressLoad.setVisibility(View.INVISIBLE);
+        Log.d("TAG", "showListTrack: ");
     }
 
     @Override

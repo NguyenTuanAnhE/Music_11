@@ -7,6 +7,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.utils.media.MediaManager;
@@ -27,6 +28,7 @@ public class MediaService extends Service implements MediaServiceListener {
     public static final String ACTION_PREVIOUS = "previous track";
     public static final String ACTION_PLAY_PAUSE = "play pause track";
     public static final String ACTION_NEXT = "next track";
+    public static final String ACTION_STOP_SERVICE = "stop service";
     private final IBinder mBinder = new MediaBinder();
     private MediaManager mMediaManager;
     private int mPosition;
@@ -143,6 +145,9 @@ public class MediaService extends Service implements MediaServiceListener {
             case ACTION_NEXT:
                 playNextTrack();
                 break;
+            case ACTION_STOP_SERVICE:
+                stopSelf();
+                break;
         }
     }
 
@@ -220,8 +225,13 @@ public class MediaService extends Service implements MediaServiceListener {
             case PREPARING:
                 break;
             case PLAYING:
+                updateNotification(mediaState);
+                startForeground(MediaNotification.NOTIFICATION_ID,
+                        mMediaNotification.createNotification(mMediaNotification.getBitmap()));
+                break;
             case PAUSED:
                 updateNotification(mediaState);
+                stopForeground(false);
                 break;
         }
 
@@ -238,8 +248,11 @@ public class MediaService extends Service implements MediaServiceListener {
     private void updateNotification(int state) {
         mMediaNotification.setState(state);
         mMediaNotification.updateNotification(mMediaNotification.getBitmap());
-        startForeground(MediaNotification.NOTIFICATION_ID,
-                mMediaNotification.createNotification(mMediaNotification.getBitmap()));
+        if (state == PLAYING) {
+
+        } else {
+
+        }
     }
 
     @Override
@@ -275,6 +288,7 @@ public class MediaService extends Service implements MediaServiceListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d("TAG", "onDestroy: ");
         if (mMediaManager == null) return;
         mMediaManager.destroy();
     }

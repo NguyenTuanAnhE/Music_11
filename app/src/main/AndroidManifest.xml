@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.framgia.anhnt.vmusic">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".utils.App"
@@ -12,12 +12,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/CustomStatusBarTheme">
-        <activity android:name=".screen.online.OnlineActivity">
+        <activity android:name=".screen.home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".screen.online.OnlineActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".screen.player.PlayerActivity"
+            android:parentActivityName=".screen.online.OnlineActivity"
+            android:screenOrientation="portrait" />
+
+        <activity android:name=".screen.search.SearchActivity" />
+
+        <service android:name=".service.MediaService" />
     </application>
 </manifest>

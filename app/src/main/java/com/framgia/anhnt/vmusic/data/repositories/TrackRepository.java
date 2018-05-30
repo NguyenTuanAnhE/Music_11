@@ -37,4 +37,9 @@ public class TrackRepository implements TrackDataSource.LocalDataSource,
         mRemoteDataSource.getRemoteTrack(genre, limit, offset, listener);
     }
 
+    @Override
+    public void searchTrack(int limit, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
+        mRemoteDataSource.searchTrack(limit, key, listener);
+    }
+
 }

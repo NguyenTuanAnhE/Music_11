@@ -1,5 +1,7 @@
 package com.framgia.anhnt.vmusic.utils;
 
+import android.util.Log;
+
 import com.framgia.anhnt.vmusic.BuildConfig;
 
 import java.util.Iterator;
@@ -41,6 +43,15 @@ public class TrackUtils {
                 "=" +
                 BuildConfig.API_KEY;
         return streamUrl;
+    }
+
+    public static String makeSearchUrl(int limit, String key) {
+        String url = String.format("%s%s&%s=%d&%s=%s&%s=%s", Constants.ApiRequest.HOST_SEARCH,
+                Constants.ApiRequest.SEARCH_FILTER, Constants.ApiRequest.LIMIT, limit,
+                Constants.ApiRequest.CLIENT_ID, BuildConfig.API_KEY,
+                Constants.ApiRequest.PARAMETER_SEARCH, key);
+        Log.d("TAG", "makeSearchUrl: " + url);
+        return url;
     }
 
     public static String getGenre(int position) {

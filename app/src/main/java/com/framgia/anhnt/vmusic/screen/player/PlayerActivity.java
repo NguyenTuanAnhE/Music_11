@@ -118,12 +118,6 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopService(new Intent(this, MediaService.class));
-    }
-
-    @Override
     protected boolean getFullScreen() {
         return false;
     }

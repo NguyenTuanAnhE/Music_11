@@ -1,6 +1,7 @@
 package com.framgia.anhnt.vmusic.data.iterator;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
 
@@ -27,6 +28,7 @@ public abstract class TrackRemote<T> extends
     protected T doInBackground(String... strings) {
         try {
             String json = mTrackRemoteHandle.getJsonFromApi(strings[0]);
+            Log.d("TAG", ": ");
             return getData(json);
         } catch (IOException e) {
             mWrapperData.setException(e);

@@ -233,13 +233,21 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
 
     public void switchShuffleState() {
         if (mShuffle == NO_SHUFFLE) {
-            mShuffleTracks = getShuffleTracks(mTracks);
-            Track track = mTracks.get(mCurrentPosition);
-            mCurrentPosition = mShuffleTracks.indexOf(track);
+
+            mShuffleTracks.clear();
+            mShuffleTracks.addAll(mTracks);
+            Collections.shuffle(mTracks);
+            mShufflePosition = mCurrentPosition;
+            mCurrentPosition = 0;
             mShuffle = SHUFFLE;
         } else {
-            mCurrentPosition = mTracks.indexOf(mShuffleTracks.get(mCurrentPosition));
-            mShuffle = NO_SHUFFLE;
+            mShufflePosition = mTracks.indexOf(mShuffleTracks.get(mCurrentPosition));
+            if (mShufflePosition >= 0) {
+                mCurrentPosition = mShufflePosition;
+                mTracks.clear();
+                mTracks.addAll(mShuffleTracks);
+                mShuffle = NO_SHUFFLE;
+            }
         }
         mListener.onShuffle(mShuffle);
     }

@@ -12,6 +12,8 @@ public interface TrackDataSource {
     interface RemoteDataSource {
         void getRemoteTrack(String genre, int limit, int offset,
                             OnFetchDataListener<List<Track>> listener);
+
+        void searchTrack(int limit, String key, OnFetchDataListener<List<Track>> listener);
     }
 
     interface OnFetchDataListener<T> {

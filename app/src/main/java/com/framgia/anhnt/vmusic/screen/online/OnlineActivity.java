@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -18,6 +19,7 @@ import com.framgia.anhnt.vmusic.BaseActivity;
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.screen.player.PlayerActivity;
+import com.framgia.anhnt.vmusic.screen.search.SearchActivity;
 import com.framgia.anhnt.vmusic.service.MediaService;
 import com.framgia.anhnt.vmusic.service.MediaServiceListener;
 import com.framgia.anhnt.vmusic.utils.TabPosition;
@@ -90,12 +92,6 @@ public class OnlineActivity extends BaseActivity implements OnlineContract.View,
         mMediaService.removeListener(this);
         unbindService(mConnection);
         mIsBound = false;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopService(new Intent(this, MediaService.class));
     }
 
     @Override
@@ -222,6 +218,8 @@ public class OnlineActivity extends BaseActivity implements OnlineContract.View,
                 onBackPressed();
                 break;
             case R.id.image_search_background:
+                Intent intent = new Intent(this, SearchActivity.class);
+                startActivity(intent);
                 break;
             case R.id.image_small_previous:
                 previousTrack();
