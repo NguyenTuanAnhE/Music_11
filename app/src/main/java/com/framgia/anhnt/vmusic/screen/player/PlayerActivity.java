@@ -26,6 +26,7 @@ import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
 import com.framgia.anhnt.vmusic.data.source.local.TrackLocalDataSource;
 import com.framgia.anhnt.vmusic.data.source.remote.TrackRemoteDataSource;
 import com.framgia.anhnt.vmusic.service.MediaService;
+import com.framgia.anhnt.vmusic.service.MediaServiceListener;
 import com.framgia.anhnt.vmusic.utils.TrackUtils;
 
 import java.util.List;
@@ -37,11 +38,15 @@ import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.NO_SHUFFLE;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PAUSED;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PLAYING;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARED;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARING;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.SHUFFLE;
 
 public class PlayerActivity extends BaseActivity implements PlayerContract.View,
-        View.OnClickListener, SeekBar.OnSeekBarChangeListener, MediaService.OnMediaListener, PlayerAdapter.OnTrackClickListener {
-    private static final String ARGUMENT_GENRE = "genre";
+        View.OnClickListener, SeekBar.OnSeekBarChangeListener, MediaServiceListener,
+        PlayerAdapter.OnTrackClickListener {
+    public static final String ARGUMENT_GENRE = "genre";
+    public static final String ARGUMENT_NEW_TRACK = "new track";
+    private static final long DELAY_TIME = 10;
     private Toolbar mToolbar;
     private ImageView mImageArtwork;
     private TextView mTextCurrentDuration;
@@ -65,7 +70,7 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
     private List<Track> mTracks;
     private int mPosition;
     private MediaService mMediaService;
-    private boolean mBound;
+    private boolean mIsBound;
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
@@ -74,15 +79,16 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
             MediaService.MediaBinder binder = (MediaService.MediaBinder) service;
             mMediaService = binder.getService();
             mMediaService.setListener(PlayerActivity.this);
-            mBound = true;
+            mIsBound = true;
 
-            updatePlayingDetail(mMediaService.getCurrentTrack(), true);
             getData();
+            updatePlayingDetail(mMediaService.getCurrentTrack());
+
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            mIsBound = false;
         }
     };
 
@@ -106,8 +112,15 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
     @Override
     protected void onStop() {
         super.onStop();
+        mMediaService.removeListener(this);
         unbindService(mConnection);
-        mBound = false;
+        mIsBound = false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, MediaService.class));
     }
 
     @Override
@@ -157,7 +170,7 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
         mSeekBarDuration.setFocusable(false);
 
         setSupportActionBar(mToolbar);
-        mToolbar.setTitle(R.string.player);
+        setTitle(R.string.player);
     }
 
     private void initComponent() {
@@ -191,19 +204,18 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
         mPosition = mMediaService.getCurrentPosition();
         mTracks = mMediaService.getTracks();
         mPlayerAdapter.addData(mTracks);
+        mPlayerAdapter.setPosition(mPosition);
     }
 
-    private void updatePlayingDetail(Track track, boolean isReload) {
-        updateTrackDetail(track, isReload);
+    private void updatePlayingDetail(Track track) {
+        updateTrackDetail(track);
         updateSeekbar();
-        updateControlButton();
+        updateControlButton(track);
     }
 
-    private void updateTrackDetail(Track track, boolean isReload) {
-        if (isReload) {
-            mTextTitle.setText(track.getTitle());
-            mTextArtist.setText(track.getUsername());
-        }
+    private void updateTrackDetail(Track track) {
+        mTextTitle.setText(track.getTitle());
+        mTextArtist.setText(track.getUsername());
         mTextDuration.setText(TrackUtils.getDuration(track.getDuration()));
         mSeekBarDuration.setMax((int) track.getDuration());
         Glide.with(getApplicationContext())
@@ -217,26 +229,47 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
             public void run() {
                 mTextCurrentDuration.setText(TrackUtils.getDuration(mMediaService.getCurrentDuration()));
                 mSeekBarDuration.setProgress((int) mMediaService.getCurrentDuration());
-                mHandler.postDelayed(this, (long) getResources().getDimension(R.dimen.sc_10));
+                mHandler.postDelayed(this, DELAY_TIME);
             }
         }, 0);
     }
 
-    private void updateControlButton() {
-        setShuffle(mMediaService.getShuffle());
-        setLoop(mMediaService.getLoop());
-        if (!mMediaService.isNewSong()) {
+    private void updateControlButton(Track track) {
+        int position = mTracks == null ?
+                mMediaService.getTracks().indexOf(track) : mTracks.indexOf(track);
+        updateNowPlayingList(position);
+        updatePlayPauseButton(mMediaService.getState());
+        if (getIntent() != null && getIntent().getAction() != null) {
             loadSongSuccess();
         }
-        if (mMediaService.getState() == PAUSED || mMediaService.getState() == PREPARED) {
-            mButtonPlayPause.setBackground(getResources().getDrawable(R.drawable.ic_play));
+        setShuffle(mMediaService.getShuffle());
+        setLoop(mMediaService.getLoop());
+    }
+
+    private void updatePlayPauseButton(int state) {
+        switch (state) {
+            case PREPARING:
+                loadSongProgress();
+                break;
+            case PAUSED:
+            case PREPARED:
+                loadTrackSuccess(R.drawable.ic_play);
+                break;
+            case PLAYING:
+                loadTrackSuccess(R.drawable.ic_pause);
+                break;
         }
+    }
+
+    private void loadTrackSuccess(int resId) {
+        mButtonPlayPause.setBackgroundResource(resId);
+        mProgressLoading.setVisibility(View.INVISIBLE);
+        mButtonPlayPause.setVisibility(View.VISIBLE);
     }
 
     private void playPauseSong() {
         if (mMediaService == null) return;
         mMediaService.playPauseTrack();
-
     }
 
     private void nextTrack() {
@@ -298,6 +331,12 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
         }
     }
 
+    private void updateNowPlayingList(int position) {
+        if (position < 0) return;
+        mPlayerAdapter.setPosition(position);
+        mRecyclerPlayer.scrollToPosition(position);
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -332,28 +371,13 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
     }
 
     @Override
-    public void onPreparing() {
-        loadSongProgress();
+    public void onChangeMediaState(int mediaState) {
+        updatePlayPauseButton(mediaState);
     }
 
     @Override
-    public void onPauseTrack(Track track, boolean reLoad) {
-        mButtonPlayPause.setBackground(getResources().getDrawable(R.drawable.ic_play));
-        updatePlayingDetail(track, reLoad);
-    }
-
-    @Override
-    public void onPlayTrack(Track track, boolean reLoad) {
-        mButtonPlayPause.setBackground(getResources().getDrawable(R.drawable.ic_pause));
-        updatePlayingDetail(track, reLoad);
-    }
-
-    @Override
-    public void onPrepared(Track track) {
-        if (mMediaService.getState() == PLAYING) {
-            mButtonPlayPause.setBackground(getResources().getDrawable(R.drawable.ic_pause));
-        }
-        loadSongSuccess();
+    public void playTrack(Track track) {
+        updatePlayingDetail(track);
     }
 
     @Override
@@ -368,7 +392,7 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+        mTextCurrentDuration.setText(TrackUtils.getDuration(seekBar.getProgress()));
     }
 
     @Override
@@ -384,7 +408,7 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
 
     @Override
     public void onTrackClick(int position) {
-        if (mTracks.get(position).getId() == mMediaService.getCurrentTrack().getId()) {
+        if (!mMediaService.isNewSong(mTracks.get(position))) {
             return;
         }
         mPlayerAdapter.setPosition(position);

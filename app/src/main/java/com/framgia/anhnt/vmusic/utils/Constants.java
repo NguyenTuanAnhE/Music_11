@@ -16,5 +16,7 @@ public interface Constants {
         String NULL = "null";
         int LIMIT_VALUE = 20;
         int OFFSET_VALUE = 20;
+        String LARGE = "-large";
+        String CROP = "-crop";
     }
 }

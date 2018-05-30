@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.framgia.anhnt.vmusic.utils.Constants.ApiRequest.CLIENT_ID;
+import static com.framgia.anhnt.vmusic.utils.Constants.ApiRequest.CROP;
+import static com.framgia.anhnt.vmusic.utils.Constants.ApiRequest.LARGE;
 import static com.framgia.anhnt.vmusic.utils.Constants.ApiRequest.PARAMETER_STREAM;
 
 public class TrackUtils {
@@ -99,6 +101,13 @@ public class TrackUtils {
         }
 
         return duration;
+    }
+
+    public static String getBetterArtwork(String artwork) {
+        if (artwork.contains(LARGE)) {
+            artwork = artwork.replace(LARGE, CROP);
+        }
+        return artwork;
     }
 
 }

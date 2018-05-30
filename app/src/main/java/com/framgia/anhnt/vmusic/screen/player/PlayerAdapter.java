@@ -31,8 +31,9 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.ViewHolder
     }
 
     public void setPosition(int position) {
+        notifyItemChanged(mPosition);
         mPosition = position;
-        notifyDataSetChanged();
+        notifyItemChanged(position);
     }
 
     public void addData(List<Track> tracks) {
