@@ -1,6 +1,5 @@
 package com.framgia.anhnt.vmusic.service;
 
-import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,25 +7,32 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.utils.media.MediaManager;
+import com.framgia.anhnt.vmusic.utils.media.MediaNotification;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MediaService extends Service implements MediaManager.OnMediaListener {
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PAUSED;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PLAYING;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARING;
+
+public class MediaService extends Service implements MediaServiceListener {
     public static final String ACTION_START_MUSIC = "start music";
-    private static final String ARGUMENT_POSITION = "position";
-    private static final String ARGUMENT_LIST = "list track";
-    private final int NOTIFICATION_MEDIA = 21;
+    public static final String ARGUMENT_POSITION = "position";
+    public static final String ARGUMENT_LIST = "list track";
+    public static final String ACTION_START_ACTIVITY = "start activity";
+    public static final String ACTION_PREVIOUS = "previous track";
+    public static final String ACTION_PLAY_PAUSE = "play pause track";
+    public static final String ACTION_NEXT = "next track";
     private final IBinder mBinder = new MediaBinder();
     private MediaManager mMediaManager;
     private int mPosition;
     private List<Track> mTracks;
-    private Notification mNotification;
-    private OnMediaListener mListener;
+    private List<MediaServiceListener> mListeners;
+    private MediaNotification mMediaNotification;
 
     public static Intent getMediaServiceIntent(Context context, List<Track> tracks, int position) {
         Intent intent = new Intent(context, MediaService.class);
@@ -42,6 +48,8 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
         super.onCreate();
         mMediaManager = new MediaManager(getApplicationContext());
         mMediaManager.setListener(this);
+        mMediaNotification = new MediaNotification(this);
+        mListeners = new ArrayList<>();
     }
 
     @Nullable
@@ -53,11 +61,15 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         handleIntent(intent);
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
-    public void setListener(OnMediaListener listener) {
-        mListener = listener;
+    public void setListener(MediaServiceListener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeListener(MediaServiceListener listener) {
+        mListeners.remove(listener);
     }
 
     public int getCurrentPosition() {
@@ -88,11 +100,23 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
         return mMediaManager.getCurrentDuration();
     }
 
+    public int getShufflePosition() {
+        return mMediaManager.getShufflePosition();
+    }
+
     /**
      * Return true if click on a playing track
      */
     public boolean isNewSong() {
         return mMediaManager.isNewSong();
+    }
+
+    public boolean isNewSong(Track track) {
+        return mMediaManager.isANewSong(track);
+    }
+
+    public void setNewSong(boolean isNewSong) {
+        mMediaManager.setNewSong(isNewSong);
     }
 
     /**
@@ -109,6 +133,16 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
                 mTracks = intent.getParcelableArrayListExtra(ARGUMENT_LIST);
                 playTrack(mTracks, mPosition);
                 break;
+            case ACTION_PREVIOUS:
+                playPreviousTrack();
+                break;
+            case ACTION_PLAY_PAUSE:
+                if (mMediaManager.getState() == PREPARING) return;
+                playPauseTrack();
+                break;
+            case ACTION_NEXT:
+                playNextTrack();
+                break;
         }
     }
 
@@ -117,7 +151,7 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      */
     public void playTrack(List<Track> tracks, int position) {
         if (mMediaManager == null) return;
-        mMediaManager.playTrack(tracks, position);
+        mMediaManager.playTracks(tracks, position);
     }
 
     /**
@@ -125,28 +159,28 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      */
     public void playTrack(int position) {
         if (mMediaManager == null) return;
-        mMediaManager.playTrack(position);
+        mMediaManager.playTracks(position);
     }
 
     /**
      * Play or pause a track if track is played
      */
     public void playPauseTrack() {
-        mMediaManager.playOrPause();
+        mMediaManager.playAndPause();
     }
 
     /**
      * Play next track
      */
     public void playNextTrack() {
-        mMediaManager.playNextTrack();
+        mMediaManager.nextTrack();
     }
 
     /**
      * Play previous track
      */
     public void playPreviousTrack() {
-        mMediaManager.playPreviousTrack();
+        mMediaManager.previousTrack();
     }
 
     /**
@@ -160,7 +194,7 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      * Loop if a track play complete by loop mode
      */
     public void loopSong() {
-        mMediaManager.loopTrack();
+        mMediaManager.switchLoopState();
     }
 
     /**
@@ -175,39 +209,47 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      */
     @Override
     public void onFail(String error) {
-        mListener.onFail(error);
+        for (MediaServiceListener listener : mListeners) {
+            listener.onFail(error);
+        }
+    }
+
+    @Override
+    public void onChangeMediaState(int mediaState) {
+        switch (mediaState) {
+            case PREPARING:
+                break;
+            case PLAYING:
+            case PAUSED:
+                updateNotification(mediaState);
+                break;
+        }
+
+        for (MediaServiceListener listener : mListeners) {
+            listener.onChangeMediaState(mediaState);
+        }
     }
 
     /**
-     * Callback when preparing play a track
+     * Update notification ui match with current state
+     *
+     * @param state
      */
-    @Override
-    public void onPreparing() {
-        mListener.onPreparing();
+    private void updateNotification(int state) {
+        mMediaNotification.setState(state);
+        mMediaNotification.updateNotification(mMediaNotification.getBitmap());
+        startForeground(MediaNotification.NOTIFICATION_ID,
+                mMediaNotification.createNotification(mMediaNotification.getBitmap()));
     }
 
-    /**
-     * Callback when pause play a track
-     */
     @Override
-    public void onPause(Track track, boolean reLoad) {
-        mListener.onPauseTrack(track, reLoad);
-    }
-
-    /**
-     * Callback when play play a track
-     */
-    @Override
-    public void onPlay(Track track, boolean reLoad) {
-        mListener.onPlayTrack(track, reLoad);
-    }
-
-    /**
-     * Callback when a track is prepared success to play
-     */
-    @Override
-    public void onPrepared(Track track) {
-        mListener.onPrepared(track);
+    public void playTrack(Track track) {
+        mMediaNotification.getRemoteIcon(getCurrentTrack());
+        mMediaNotification.startForegroundService(null);
+        mMediaNotification.setState(mMediaManager.getState());
+        for (MediaServiceListener listener : mListeners) {
+            listener.playTrack(track);
+        }
     }
 
     /**
@@ -215,7 +257,9 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      */
     @Override
     public void onShuffle(int shuffle) {
-        mListener.onShuffle(shuffle);
+        for (MediaServiceListener listener : mListeners) {
+            listener.onShuffle(shuffle);
+        }
     }
 
     /**
@@ -223,7 +267,9 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
      */
     @Override
     public void onLoop(int loop) {
-        mListener.onLoop(loop);
+        for (MediaServiceListener listener : mListeners) {
+            listener.onLoop(loop);
+        }
     }
 
     @Override
@@ -237,21 +283,5 @@ public class MediaService extends Service implements MediaManager.OnMediaListene
         public MediaService getService() {
             return MediaService.this;
         }
-    }
-
-    public interface OnMediaListener {
-        void onFail(String error);
-
-        void onPreparing();
-
-        void onPauseTrack(Track track, boolean reLoad);
-
-        void onPlayTrack(Track track, boolean reLoad);
-
-        void onPrepared(Track track);
-
-        void onShuffle(int shuffle);
-
-        void onLoop(int loop);
     }
 }

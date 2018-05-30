@@ -2,10 +2,10 @@ package com.framgia.anhnt.vmusic.utils.media;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.util.Log;
 
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.data.model.Track;
+import com.framgia.anhnt.vmusic.service.MediaServiceListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,15 +14,16 @@ import java.util.List;
 
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.ERROR;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.IDLE;
-import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PLAYING;
-import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PAUSED;
-import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARED;
-import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.STOPPED;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.LOOP_ALL;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.LOOP_NO;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.LOOP_ONE;
-import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.LOOP_ALL;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.NO_SHUFFLE;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PAUSED;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PLAYING;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARED;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARING;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.SHUFFLE;
+import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.STOPPED;
 
 public class MediaManager implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener {
@@ -32,12 +33,13 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
     private int mLoop;
     private int mShuffle;
     private int mCurrentPosition;
+    private int mShufflePosition;
     private boolean mEndOfList;
     private boolean mNewSong;
     private List<Track> mTracks;
     private List<Track> mShuffleTracks;
     private Track mCurrentTrack;
-    private OnMediaListener mListener;
+    private MediaServiceListener mListener;
 
     public MediaManager(Context context) {
         mContext = context;
@@ -47,28 +49,20 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
         mState = IDLE;
     }
 
-    public void setListener(OnMediaListener listener) {
+    public void setListener(MediaServiceListener listener) {
         mListener = listener;
+    }
+
+    public void setNewSong(boolean newSong) {
+        mNewSong = newSong;
     }
 
     public List<Track> getTracks() {
         return mTracks;
     }
 
-    public void setTracks(List<Track> tracks) {
-        mTracks = tracks;
-    }
-
-    public int getCurrentPosition() {
-        return mCurrentPosition;
-    }
-
-    public void setCurrentPosition(int currentPosition) {
-        mCurrentPosition = currentPosition;
-    }
-
-    public Track getCurrentTrack() {
-        return mTracks.get(mCurrentPosition);
+    public int getShufflePosition() {
+        return mShufflePosition;
     }
 
     public int getState() {
@@ -92,145 +86,165 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
         return mNewSong;
     }
 
+    public boolean isEnd() {
+        return mEndOfList;
+    }
+
+
+    private boolean isEndOfList() {
+        return getCurrentTracks().indexOf(mCurrentTrack)
+                == getCurrentTracks().size() - 1;
+    }
+
+    public int getCurrentPosition() {
+        return mCurrentPosition;
+    }
+
+    public Track getCurrentTrack() {
+        return getCurrentTracks().get(getCurrentPosition());
+    }
+
     /**
-     * Play track when click on a  item in list tracks
+     * @return Current playing tracks
      */
-    public void playTrack(List<Track> tracks, int position) {
-        //handle empty list
-        if (tracks.size() == 0) {
-            mState = ERROR;
-            mListener.onFail(mContext.getString(R.string.error_empty_list));
+    private List<Track> getCurrentTracks() {
+        if (mShuffle == SHUFFLE) {
+            return mShuffleTracks;
+        }
+        return mTracks;
+    }
+
+    /**
+     * @param track
+     * @return
+     */
+    public boolean isANewSong(Track track) {
+        if (track == null) {
+            return false;
+        }
+        if (getCurrentTrack() == null) {
+            return true;
+        }
+        if (mState == IDLE) {
+            return true;
+        }
+        return track.getId() != getCurrentTrack().getId();
+    }
+
+    public void playTracks(List<Track> tracks, int position) {
+        if (tracks == null || position < 0) {
             return;
         }
-        if (mTracks != null && mTracks.size() != 0) {
-            //if tracked is selected to play is playing
-            if (mCurrentTrack.getId() == tracks.get(position).getId()) {
-                mNewSong = false;
-                return;
-            }
-        }
-        //play a new track
-        mNewSong = true;
-        mTracks.clear();
-        mTracks.addAll(tracks);
-        mCurrentPosition = position;
-        prepareTrack();
+        mTracks = tracks;
+        //mShuffleTracks = getShuffleTracks(mTracks);
+        playTracks(position);
+    }
+
+    private List<Track> getShuffleTracks(List<Track> tracks) {
+        List<Track> result = new ArrayList<>();
+        result.addAll(tracks);
+        Collections.shuffle(result);
+        return result;
     }
 
     /**
-     * Play track with position of item in list
+     *
      */
-    public void playTrack(int position) {
+
+    public void playTracks(int position) {
+        List<Track> tracks = getCurrentTracks();
+        Track track = tracks.get(position);
+        if (!isANewSong(track)) {
+            mNewSong = false;
+            return;
+        }
         mCurrentPosition = position;
-        //update ui
-        mListener.onPlay(getCurrentTrack(), true);
-        prepareTrack();
+        playTracks(track);
     }
 
-    public void prepareTrack() {
-        //if error reset media player to idle state
+    /**
+     * @param track
+     */
+    private void playTracks(Track track) {
         if (mState != ERROR) {
             reset();
         }
-        //get current track(selected track)
-        mCurrentTrack = getCurrentTrack();
+        mListener.playTrack(track);
+        mState = PREPARING;
+        mNewSong = true;
+        mListener.onChangeMediaState(mState);
         try {
-            mMediaPlayer.setDataSource(mCurrentTrack.getUri());
+            mMediaPlayer.setDataSource(track.getUri());
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(this);
             mMediaPlayer.setOnCompletionListener(this);
         } catch (IOException e) {
             mListener.onFail(e.getMessage());
         }
+        mCurrentTrack = track;
     }
 
-    /**
-     * Play or pause a track if track is played
-     */
-    public void playOrPause() {
-        //if track is playing, pause track
-        if (mState == PLAYING) {
-            mMediaPlayer.pause();
-            mState = PAUSED;
-            mListener.onPause(getCurrentTrack(), false);
-        } else if (mState == PAUSED || mState == STOPPED || mState == PREPARED) {
-            //if track is paused or stopped or prepared, play track
-            mMediaPlayer.start();
-            mState = PLAYING;
-            mListener.onPlay(mCurrentTrack, false);
-        }
-    }
-
-    /**
-     * Play next track
-     */
-    public void playNextTrack() {
-        //update ui load progress
-        mListener.onPreparing();
-        //if current playing is end of list tracks
-        if (mCurrentPosition == mTracks.size() - 1) {
-            //if loop mode LOOP_ALL not active
+    public void nextTrack() {
+        if (isEndOfList()) {
             if (mLoop != LOOP_ALL) {
                 mListener.onFail(mContext.getString(R.string.error_end_of_list));
                 return;
             }
-            //if LOOP_ALL  active
             mCurrentPosition = -1;
         }
-        //go to playing next track
         mCurrentPosition++;
-        mNewSong = true;
-        //update detail of playing track
-        mListener.onPlay(getCurrentTrack(), true);
-        prepareTrack();
+        playTracks(getCurrentTracks().get(mCurrentPosition));
+
     }
 
-    /**
-     * Play previous track
-     */
-    public void playPreviousTrack() {
-        //update ui progress loading
-        mListener.onPreparing();
-        //if current playing is end of list tracks, go to end of track
+    public void previousTrack() {
         if (mCurrentPosition == 0) {
-            mCurrentPosition = mTracks.size();
+            mCurrentPosition = getCurrentTracks().size();
         }
-        //go to playing next track
         mCurrentPosition--;
-        mNewSong = true;
-        //update detail of playing track
-        mListener.onPlay(getCurrentTrack(), true);
-        prepareTrack();
+        playTracks(getCurrentTracks().get(mCurrentPosition));
     }
 
-    /**
-     * Shuffle list track
-     */
+    public void pauseTrack() {
+        mMediaPlayer.pause();
+        mState = PAUSED;
+        mListener.onChangeMediaState(mState);
+    }
+
+    public void playTrack() {
+        mMediaPlayer.start();
+        mState = PLAYING;
+        mListener.onChangeMediaState(mState);
+    }
+
+
+    public void playAndPause() {
+        switch (mState) {
+            case PLAYING:
+                pauseTrack();
+                break;
+            case PAUSED:
+            case STOPPED:
+            case PREPARED:
+                playTrack();
+                break;
+        }
+    }
+
     public void switchShuffleState() {
-        //if shuffle mode SHUFFLE not active, shuffle track and save a list not shuffled
         if (mShuffle == NO_SHUFFLE) {
-            mShuffleTracks.clear();
-            mShuffleTracks.addAll(mTracks);
-            Collections.shuffle(mTracks);
+            mShuffleTracks = getShuffleTracks(mTracks);
+            Track track = mTracks.get(mCurrentPosition);
+            mCurrentPosition = mShuffleTracks.indexOf(track);
             mShuffle = SHUFFLE;
         } else {
-            /**
-             * get position of playing track in list track not shuffled,
-             * get list track from list not shuffled
-             */
-            int currentPosition = mShuffleTracks.indexOf(getCurrentTrack());
-            if (currentPosition >= 0) {
-                mCurrentPosition = currentPosition;
-                mTracks.clear();
-                mTracks.addAll(mShuffleTracks);
-                mShuffle = NO_SHUFFLE;
-            }
+            mCurrentPosition = mTracks.indexOf(mShuffleTracks.get(mCurrentPosition));
+            mShuffle = NO_SHUFFLE;
         }
-        //update ui shuffle button
         mListener.onShuffle(mShuffle);
     }
 
-    public void loopTrack() {
+    public void switchLoopState() {
         //set loop mode
         switch (mLoop) {
             case LOOP_NO:
@@ -249,26 +263,6 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
     }
 
     /**
-     * Play next track when loop not active
-     */
-    private void loopNoTracks() {
-        //if playing track is not end of list, play next track
-        if (getCurrentPosition() != getTracks().size() - 1) {
-            playNextTrack();
-            mNewSong = true;
-            //update ui progress loading
-            mListener.onPreparing();
-        } else {
-            //if playing track is not end of list, go to head of list
-            mCurrentPosition = 0;
-            //update ui play button, wait for play
-            mListener.onPause(getCurrentTrack(), true);
-            mEndOfList = true;
-            prepareTrack();
-        }
-    }
-
-    /**
      * Play a track again when complete
      */
     private void loopOneTrack() {
@@ -282,7 +276,7 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
      */
     private void loopAllTracks() {
         mNewSong = true;
-        playNextTrack();
+        nextTrack();
     }
 
     /**
@@ -293,14 +287,6 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
         if (mState == PLAYING || mState == PAUSED) {
             mMediaPlayer.seekTo(position);
         }
-    }
-
-    /**
-     * pause music
-     */
-    public void pause() {
-        if (mMediaPlayer == null) return;
-        mMediaPlayer.pause();
     }
 
     /**
@@ -324,49 +310,39 @@ public class MediaManager implements MediaPlayer.OnPreparedListener,
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        //if LOOP_ALL not active
-        if (mEndOfList) {
-            //wait to user click play agian
-            mState = PREPARED;
-            mEndOfList = false;
-        } else {
-            mMediaPlayer.start();
-            mState = PLAYING;
-        }
-        //update ui process loading
-        mListener.onPrepared(mCurrentTrack);
+        mMediaPlayer.start();
+        mState = PLAYING;
+        mListener.onChangeMediaState(mState);
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        //handle when a track play complete
         switch (mLoop) {
             case LOOP_NO:
-                loopNoTracks();
+                nextTrack();
                 break;
             case LOOP_ONE:
                 loopOneTrack();
                 break;
             case LOOP_ALL:
                 loopAllTracks();
-                mListener.onPreparing();
                 break;
         }
     }
 
-    public interface OnMediaListener {
-        void onFail(String error);
-
-        void onPreparing();
-
-        void onPause(Track track, boolean reLoad);
-
-        void onPlay(Track track, boolean reLoad);
-
-        void onPrepared(Track track);
-
-        void onShuffle(int shuffle);
-
-        void onLoop(int loop);
-    }
+//    public interface OnMediaListener {
+//        void onFail(String error);
+//
+//        void onPreparing(Track track);
+//
+//        void onPause(Track track, boolean reLoad);
+//
+//        void onPlay(Track track, boolean reLoad);
+//
+//        void onPrepared(Track track);
+//
+//        void onShuffle(int shuffle);
+//
+//        void onLoop(int loop);
+//    }
 }
