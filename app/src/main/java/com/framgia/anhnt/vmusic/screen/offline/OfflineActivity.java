@@ -1,15 +1,15 @@
-package com.framgia.anhnt.vmusic.screen.search;
+package com.framgia.anhnt.vmusic.screen.offline;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,39 +23,36 @@ import com.framgia.anhnt.vmusic.data.repositories.TrackRepository;
 import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
 import com.framgia.anhnt.vmusic.data.source.local.TrackLocalDataSource;
 import com.framgia.anhnt.vmusic.data.source.remote.TrackRemoteDataSource;
+import com.framgia.anhnt.vmusic.screen.online.OnlineActivity;
 import com.framgia.anhnt.vmusic.screen.player.PlayerActivity;
+import com.framgia.anhnt.vmusic.screen.search.SearchActivity;
 import com.framgia.anhnt.vmusic.service.MediaService;
 import com.framgia.anhnt.vmusic.service.MediaServiceListener;
-import com.framgia.anhnt.vmusic.utils.Constants;
 import com.makeramen.roundedimageview.RoundedImageView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.IDLE;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PLAYING;
 import static com.framgia.anhnt.vmusic.utils.MediaPlayerState.PREPARING;
 
-public class SearchActivity extends BaseActivity implements SearchContract.View,
-        SearchAdapter.OnTrackClickListener, SearchView.OnQueryTextListener, View.OnClickListener, MediaServiceListener {
-    private SearchContract.Presenter mPresenter;
-    private SearchAdapter mSearchAdapter;
-    private List<Track> mTracks;
-    private SearchView mSearchView;
-    private ProgressBar mProgressLoad;
-    private TextView mTextResult;
-    private RecyclerView mRecyclerSearch;
-    private Button mButtonBack;
+public class OfflineActivity extends BaseActivity implements OfflineContract.View,
+        OfflineAdapter.OnTrackClickListener, View.OnClickListener, MediaServiceListener {
+    private View mToolBar;
+    private TextView mTextTitleToolbar;
+    private RecyclerView mRecyclerLocal;
     private View mLayoutBottom;
     private TextView mTextTitleSmall;
     private TextView mTextArtistSmall;
     private RoundedImageView mImageArtworkSmall;
     private ImageButton mImagePlay;
     private ProgressBar mProgressLoading;
-    private int mOffset;
-    private boolean isLoadMore;
+    private OfflineAdapter mOfflineAdapter;
+    private OfflinePresenter mPresenter;
+    private List<Track> mTracks;
     private MediaService mMediaService;
     private boolean mIsBound;
+
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
@@ -63,7 +60,7 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
                                        IBinder service) {
             MediaService.MediaBinder binder = (MediaService.MediaBinder) service;
             mMediaService = binder.getService();
-            mMediaService.setListener(SearchActivity.this);
+            mMediaService.setListener(OfflineActivity.this);
             mIsBound = true;
             if (mMediaService.getState() != IDLE) {
                 showSmallControlView(mMediaService.getCurrentTrack());
@@ -76,64 +73,9 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
         }
     };
 
-    private void showSmallControlView(Track track) {
-        mLayoutBottom.setVisibility(View.VISIBLE);
-        updateDataSmallView(track);
-        updatePlayButton(mMediaService.getState());
-    }
-
-    private void updateDataSmallView(Track track) {
-        mTextTitleSmall.setText(track.getTitle());
-        mTextArtistSmall.setText(track.getUsername());
-        Glide.with(getApplicationContext())
-                .load(track.getArtworkUrl())
-                .into(mImageArtworkSmall);
-    }
-
-    private void loadSongProgress() {
-        mProgressLoading.setVisibility(View.VISIBLE);
-        mImagePlay.setVisibility(View.INVISIBLE);
-    }
-
-    private void loadSongSuccess() {
-        mProgressLoading.setVisibility(View.INVISIBLE);
-        mImagePlay.setVisibility(View.VISIBLE);
-    }
-
-    private void loadTrackSuccess(int resId) {
-        mImagePlay.setBackgroundResource(resId);
-        mProgressLoading.setVisibility(View.INVISIBLE);
-        mImagePlay.setVisibility(View.VISIBLE);
-    }
-
-    private void playPauseSong() {
-        if (mMediaService == null) return;
-        mMediaService.playPauseTrack();
-
-    }
-
-    private void nextTrack() {
-        if (mMediaService == null) return;
-        mMediaService.playNextTrack();
-    }
-
-    private void previousTrack() {
-        if (mMediaService == null) return;
-        mMediaService.playPreviousTrack();
-    }
-
-    private void updatePlayButton(int mediaState) {
-        switch (mediaState) {
-            case PREPARING:
-                loadSongProgress();
-                break;
-            case PLAYING:
-                loadTrackSuccess(R.drawable.ic_pause);
-                break;
-            default:
-                loadTrackSuccess(R.drawable.ic_play);
-                break;
-        }
+    public static Intent getOfflineIntent(Context context) {
+        Intent intent = new Intent(context, OfflineActivity.class);
+        return intent;
     }
 
     @Override
@@ -159,6 +101,66 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
         mIsBound = false;
     }
 
+    private void showSmallControlView(Track track) {
+        mLayoutBottom.setVisibility(View.VISIBLE);
+        updateDataSmallView(track);
+        updatePlayButton(mMediaService.getState());
+    }
+
+    private void updateDataSmallView(Track track) {
+        mTextTitleSmall.setText(track.getTitle());
+        mTextArtistSmall.setText(track.getUsername());
+        Glide.with(getApplicationContext())
+                .load(track.getArtworkUrl())
+                .into(mImageArtworkSmall);
+    }
+
+    private void updatePlayButton(int mediaState) {
+        switch (mediaState) {
+            case PREPARING:
+                loadSongProgress();
+                break;
+            case PLAYING:
+                loadTrackSuccess(R.drawable.ic_pause);
+                break;
+            default:
+                loadTrackSuccess(R.drawable.ic_play);
+                break;
+        }
+    }
+
+    private void loadSongProgress() {
+        mProgressLoading.setVisibility(View.VISIBLE);
+        mImagePlay.setVisibility(View.INVISIBLE);
+    }
+
+    private void loadTrackSuccess(int resId) {
+        mImagePlay.setBackgroundResource(resId);
+        mProgressLoading.setVisibility(View.INVISIBLE);
+        mImagePlay.setVisibility(View.VISIBLE);
+    }
+
+    private void playPauseSong() {
+        if (mMediaService == null) return;
+        mMediaService.playPauseTrack();
+
+    }
+
+    private void nextTrack() {
+        if (mMediaService == null) return;
+        mMediaService.playNextTrack();
+    }
+
+    private void previousTrack() {
+        if (mMediaService == null) return;
+        mMediaService.playPreviousTrack();
+    }
+
+    private void loadSongSuccess() {
+        mProgressLoading.setVisibility(View.INVISIBLE);
+        mImagePlay.setVisibility(View.VISIBLE);
+    }
+
     @Override
     protected boolean getFullScreen() {
         return false;
@@ -171,7 +173,7 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
 
     @Override
     public int getContentLayout() {
-        return R.layout.activity_search;
+        return R.layout.activity_offline;
     }
 
     @Override
@@ -181,45 +183,27 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
 
     @Override
     public void initComponents() {
-        initView();
-        initListener();
-        initComponent();
-    }
-
-    private void initView() {
         mLayoutBottom = findViewById(R.id.include_small_control);
+        mToolBar = findViewById(R.id.include_toolbar);
+        mTextTitleToolbar = findViewById(R.id.text_title_toolbar);
+        mToolBar.setBackgroundColor(getResources()
+                .getColor(R.color.color_dodger_blue));
+        mTextTitleToolbar.setText(getResources().getString(R.string.my_music));
+        mRecyclerLocal = findViewById(R.id.recycler_local);
         mImageArtworkSmall = findViewById(R.id.image_artwork_small);
         mImagePlay = findViewById(R.id.image_small_play);
         mTextArtistSmall = findViewById(R.id.text_artist_small);
         mTextTitleSmall = findViewById(R.id.text_title_small);
         mProgressLoading = findViewById(R.id.progress_small_loading);
-        mButtonBack = findViewById(R.id.button_back);
-        mProgressLoad = findViewById(R.id.progress_loading);
-        mTextResult = findViewById(R.id.text_no_result);
-        mRecyclerSearch = findViewById(R.id.recycler_search);
-        mSearchView = findViewById(R.id.search_track);
-        mSearchView.setIconifiedByDefault(true);
-        mSearchView.setFocusable(true);
-        mSearchView.setIconified(false);
-        mSearchView.requestFocusFromTouch();
         mLayoutBottom.setBackgroundColor(getResources()
                 .getColor(R.color.color_ocean_blue));
-    }
-
-    private void initListener() {
-        mSearchView.setOnQueryTextListener(this);
-        mButtonBack.setOnClickListener(this);
         mLayoutBottom.setOnClickListener(this);
         mImagePlay.setOnClickListener(this);
         findViewById(R.id.button_back).setOnClickListener(this);
+        findViewById(R.id.image_search_background).setOnClickListener(this);
         findViewById(R.id.image_small_next).setOnClickListener(this);
         findViewById(R.id.image_small_previous).setOnClickListener(this);
-    }
-
-    private void initComponent() {
-        mTracks = new ArrayList<>();
-        mSearchAdapter = new SearchAdapter(this);
-        mSearchAdapter.setListener(this);
+        findViewById(R.id.image_search_background).setOnClickListener(this);
 
         TrackDataSource.LocalDataSource localDataSource =
                 TrackLocalDataSource.getInstance();
@@ -227,93 +211,29 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
                 TrackRemoteDataSource.getInstance();
         TrackRepository trackRepository =
                 TrackRepository.getInstance(localDataSource, remoteDataSource);
-
-        mPresenter = new SearchPresenter(trackRepository);
+        mPresenter = new OfflinePresenter(trackRepository);
         mPresenter.setView(this);
-        mRecyclerSearch.setAdapter(mSearchAdapter);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        mRecyclerSearch.setLayoutManager(layoutManager);
 
-        mRecyclerSearch.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                loadMore(layoutManager);
-            }
-        });
-    }
+        mOfflineAdapter = new OfflineAdapter(this);
+        mOfflineAdapter.setListener(this);
 
-    private void loadMore(LinearLayoutManager layoutManager) {
-        if (mTracks == null || mTracks.size() == 0) return;
-        if (layoutManager.findLastVisibleItemPosition() == mTracks.size() - 1) {
-            if (!isLoadMore) {
-                mOffset += Constants.ApiRequest.LIMIT_VALUE;
-                mPresenter.searchTrack(Constants.ApiRequest.LIMIT_VALUE, mOffset,
-                        mSearchView.getQuery().toString());
-                mProgressLoad.setVisibility(View.VISIBLE);
-                isLoadMore = true;
-            }
-        }
+        mRecyclerLocal.setAdapter(mOfflineAdapter);
+        mRecyclerLocal.setLayoutManager(new LinearLayoutManager(this));
+
+        mPresenter.getLocalTracks();
     }
 
     @Override
-    public void showListTrack(List<Track> tracks) {
-        mSearchView.clearFocus();
-        mProgressLoad.setVisibility(View.INVISIBLE);
-        if (tracks == null || tracks.size() == 0) {
-            if (!isLoadMore) {
-                mTracks.clear();
-                mSearchAdapter.addData(mTracks, isLoadMore);
-                mTextResult.setVisibility(View.VISIBLE);
-            } else {
-                mTextResult.setVisibility(View.INVISIBLE);
-            }
-            return;
-        }
-
-        addData(tracks);
-        mSearchAdapter.addData(tracks, isLoadMore);
-        isLoadMore = false;
-    }
-
-    private void addData(List<Track> tracks) {
-        if (isLoadMore) {
-            mTracks.addAll(tracks);
-        } else {
-            mTracks = tracks;
-        }
+    public void showListTracks(List<Track> tracks) {
+        mTracks = tracks;
+        mOfflineAdapter.addData(tracks);
     }
 
     @Override
-    public void showFailMessage() {
-        mTextResult.setVisibility(View.VISIBLE);
-        mProgressLoad.setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    public void onClick(int position) {
+    public void onTrackClick(int position) {
         startService(MediaService.getMediaServiceIntent(this,
                 mTracks, position));
         startActivity(PlayerActivity.getPlayerIntent(this));
-    }
-
-    @Override
-    public void onClickDownload(int position) {
-
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        mPresenter.searchTrack(Constants.ApiRequest.LIMIT_VALUE, mOffset, query);
-        mTextResult.setVisibility(View.INVISIBLE);
-        mProgressLoad.setVisibility(View.VISIBLE);
-        isLoadMore = false;
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        return false;
     }
 
     @Override
@@ -321,6 +241,10 @@ public class SearchActivity extends BaseActivity implements SearchContract.View,
         switch (v.getId()) {
             case R.id.button_back:
                 onBackPressed();
+                break;
+            case R.id.image_search_background:
+                Intent intent = new Intent(this, SearchActivity.class);
+                startActivity(intent);
                 break;
             case R.id.image_small_previous:
                 previousTrack();

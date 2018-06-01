@@ -36,8 +36,16 @@ public class TrackRemoteDataSource implements TrackDataSource.RemoteDataSource {
     }
 
     @Override
-    public void searchTrack(int limit, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
-        String url = TrackUtils.makeSearchUrl(limit, key);
+    public void searchTrack(int limit, int offset, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
+//        String url = TrackUtils.makeSearchUrl(limit, offset, key);
+        HashMap<String, String> params = new HashMap<>();
+
+        params.put(Constants.ApiRequest.PARAMETER_SEARCH, key);
+        params.put(Constants.ApiRequest.OFFSET, String.valueOf(offset));
+        params.put(Constants.ApiRequest.LIMIT, String.valueOf(limit));
+        params.put(Constants.ApiRequest.CLIENT_ID, BuildConfig.API_KEY);
+        params.put(Constants.ApiRequest.HOST_SEARCH, Constants.ApiRequest.SEARCH_FILTER);
+        String url = TrackUtils.makeSearchUrl(params);
         new SearchRemoteIterator(listener).execute(url);
     }
 }

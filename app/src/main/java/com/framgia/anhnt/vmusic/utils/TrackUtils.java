@@ -32,6 +32,7 @@ public class TrackUtils {
             iterator.remove();
             i++;
         }
+        Log.d("TAG", "makeUrl: " + stringBuilder.toString());
         return stringBuilder.toString();
     }
 
@@ -45,7 +46,30 @@ public class TrackUtils {
         return streamUrl;
     }
 
-    public static String makeSearchUrl(int limit, String key) {
+    public static String makeSearchUrl(Map<String, String> params) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
+        int i = 1;
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            if (i == 1) {
+                stringBuilder.append(entry.getKey())
+                        .append("?")
+                        .append(entry.getValue());
+            } else {
+                stringBuilder.append("&")
+                        .append(entry.getKey())
+                        .append("=")
+                        .append(entry.getValue());
+            }
+            iterator.remove();
+            i++;
+        }
+        Log.d("TAg", "makeSearchUrl: " + stringBuilder.toString());
+        return stringBuilder.toString();
+    }
+
+    public static String makeSearchUrl(int limit, int offset, String key) {
         String url = String.format("%s%s&%s=%d&%s=%s&%s=%s", Constants.ApiRequest.HOST_SEARCH,
                 Constants.ApiRequest.SEARCH_FILTER, Constants.ApiRequest.LIMIT, limit,
                 Constants.ApiRequest.CLIENT_ID, BuildConfig.API_KEY,
@@ -115,6 +139,7 @@ public class TrackUtils {
     }
 
     public static String getBetterArtwork(String artwork) {
+        if (artwork == null) return null;
         if (artwork.contains(LARGE)) {
             artwork = artwork.replace(LARGE, CROP);
         }

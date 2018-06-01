@@ -9,7 +9,7 @@ import com.framgia.anhnt.vmusic.screen.online.genre.GenreFragment;
 import com.framgia.anhnt.vmusic.utils.TabPosition;
 import com.framgia.anhnt.vmusic.utils.TrackUtils;
 
-public class OnlinePagerAdapter extends FragmentPagerAdapter {
+public class    OnlinePagerAdapter extends FragmentPagerAdapter {
     public OnlinePagerAdapter(FragmentManager fm) {
         super(fm);
     }

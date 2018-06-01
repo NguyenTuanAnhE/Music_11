@@ -6,14 +6,14 @@ import java.util.List;
 
 public interface TrackDataSource {
     interface LocalDataSource {
-        void getLocalTrack(OnFetchDataListener<Track> listener);
+        void getLocalTrack(OnFetchDataListener<List<Track>> listener);
     }
 
     interface RemoteDataSource {
         void getRemoteTrack(String genre, int limit, int offset,
                             OnFetchDataListener<List<Track>> listener);
 
-        void searchTrack(int limit, String key, OnFetchDataListener<List<Track>> listener);
+        void searchTrack(int limit,int offset, String key, OnFetchDataListener<List<Track>> listener);
     }
 
     interface OnFetchDataListener<T> {

@@ -46,6 +46,6 @@ public class GenrePresenter implements GenreContract.Presenter,
 
     @Override
     public void onFetchDataFail(String message) {
-
+        mView.getListFail();
     }
 }

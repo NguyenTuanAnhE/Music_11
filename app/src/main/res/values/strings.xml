@@ -12,7 +12,9 @@
     <string name="player">Now Playing</string>
     <string name="error_empty_list">Empty List</string>
     <string name="error_end_of_list">End of List</string>
+    <string name="error_get_track_local">Error</string>
     <string name="loop_one">1</string>
     <string name="search_hint">Enter track name</string>
     <string name="search_no_result">No result</string>
+    <string name="cannot_download">Can not download this file</string>
 </resources>

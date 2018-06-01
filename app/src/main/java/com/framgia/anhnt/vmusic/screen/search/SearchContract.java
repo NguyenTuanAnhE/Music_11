@@ -14,6 +14,6 @@ public interface SearchContract {
     }
 
     interface Presenter extends BasePresenter<SearchContract.View> {
-        void searchTrack(int limit, String key);
+        void searchTrack(int limit,int offset, String key);
     }
 }

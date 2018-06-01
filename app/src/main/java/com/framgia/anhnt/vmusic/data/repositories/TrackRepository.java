@@ -27,19 +27,18 @@ public class TrackRepository implements TrackDataSource.LocalDataSource,
     }
 
     @Override
-    public void getLocalTrack(TrackDataSource.OnFetchDataListener<Track> listener) {
-
-    }
-
-    @Override
     public void getRemoteTrack(String genre, int limit, int offset,
                                TrackDataSource.OnFetchDataListener<List<Track>> listener) {
         mRemoteDataSource.getRemoteTrack(genre, limit, offset, listener);
     }
 
     @Override
-    public void searchTrack(int limit, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
-        mRemoteDataSource.searchTrack(limit, key, listener);
+    public void searchTrack(int limit,int offset, String key, TrackDataSource.OnFetchDataListener<List<Track>> listener) {
+        mRemoteDataSource.searchTrack(limit,offset, key, listener);
     }
 
+    @Override
+    public void getLocalTrack(TrackDataSource.OnFetchDataListener<List<Track>> listener) {
+        mLocalDataSource.getLocalTrack(listener);
+    }
 }

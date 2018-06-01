@@ -16,7 +16,7 @@ public interface Constants {
         int CONNECT_TIMEOUT = 5000;
         String NULL = "null";
         int LIMIT_VALUE = 20;
-        int OFFSET_VALUE = 20;
+        int OFFSET_VALUE = 0;
         String LARGE = "-large";
         String CROP = "-crop";
         String SEARCH_FILTER = "?filter=public";

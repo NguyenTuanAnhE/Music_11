@@ -110,12 +110,13 @@ public class PlayerActivity extends BaseActivity implements PlayerContract.View,
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop(){
         super.onStop();
         mMediaService.removeListener(this);
         unbindService(mConnection);
         mIsBound = false;
     }
+
 
     @Override
     protected boolean getFullScreen() {

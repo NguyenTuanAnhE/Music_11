@@ -226,6 +226,7 @@ public class MediaService extends Service implements MediaServiceListener {
                 break;
             case PLAYING:
                 updateNotification(mediaState);
+                Log.d("TAG", "onChangeMediaState: ");
                 startForeground(MediaNotification.NOTIFICATION_ID,
                         mMediaNotification.createNotification(mMediaNotification.getBitmap()));
                 break;

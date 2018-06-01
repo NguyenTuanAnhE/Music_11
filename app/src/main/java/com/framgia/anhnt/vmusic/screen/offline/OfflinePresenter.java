@@ -1,32 +1,28 @@
-package com.framgia.anhnt.vmusic.screen.search;
-
-import android.util.Log;
+package com.framgia.anhnt.vmusic.screen.offline;
 
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.data.repositories.TrackRepository;
 import com.framgia.anhnt.vmusic.data.source.TrackDataSource;
-import com.framgia.anhnt.vmusic.screen.online.genre.GenreContract;
+import com.framgia.anhnt.vmusic.screen.player.PlayerContract;
 
 import java.util.List;
 
-public class SearchPresenter implements SearchContract.Presenter,
+public class OfflinePresenter implements OfflineContract.Presenter,
         TrackDataSource.OnFetchDataListener<List<Track>> {
-    private SearchContract.View mView;
+    private OfflineContract.View mView;
     private TrackRepository mTrackRepository;
 
-    public SearchPresenter(TrackRepository trackRepository) {
+    public OfflinePresenter(TrackRepository trackRepository) {
         mTrackRepository = trackRepository;
-
     }
 
     @Override
-    public void searchTrack(int limit, int offset, String key) {
-        mTrackRepository.searchTrack(limit, offset, key, this);
+    public void getLocalTracks() {
+        mTrackRepository.getLocalTrack(this);
     }
 
-
     @Override
-    public void setView(SearchContract.View view) {
+    public void setView(OfflineContract.View view) {
         mView = view;
     }
 
@@ -42,11 +38,11 @@ public class SearchPresenter implements SearchContract.Presenter,
 
     @Override
     public void onFetchDataSuccess(List<Track> data) {
-        mView.showListTrack(data);
+        mView.showListTracks(data);
     }
 
     @Override
     public void onFetchDataFail(String message) {
-        mView.showFailMessage();
+
     }
 }

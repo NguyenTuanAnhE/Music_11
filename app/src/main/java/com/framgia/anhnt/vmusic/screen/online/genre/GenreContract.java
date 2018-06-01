@@ -9,6 +9,8 @@ import java.util.List;
 public interface GenreContract {
     interface View extends BaseView {
         void showListTrack(List<Track> tracks);
+
+        void getListFail();
     }
 
     interface Presenter extends BasePresenter<View> {

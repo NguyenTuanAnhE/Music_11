@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.framgia.anhnt.vmusic.BaseActivity;
+import com.framgia.anhnt.vmusic.MainActivity;
 import com.framgia.anhnt.vmusic.R;
 import com.framgia.anhnt.vmusic.data.model.Track;
 import com.framgia.anhnt.vmusic.screen.player.PlayerActivity;
@@ -263,5 +264,13 @@ public class OnlineActivity extends BaseActivity implements OnlineContract.View,
     @Override
     public void onLoop(int loop) {
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, com.framgia.anhnt.vmusic.screen.home.MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

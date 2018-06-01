@@ -7,6 +7,7 @@
     <color name="color_burnt_sienna">#F95F62</color>
     <color name="color_deep_sky_blue">#03A9F4</color>
     <color name="color_dodger_blue">#29B6F6</color>
+    <color name="color_transparent_blue">#5a29B6F6</color>
     <color name="color_red_tomato">#FF5252</color>
     <color name="color_white_transparent">#5affffff</color>
     <color name="color_golden_yellow">#ffea00</color>

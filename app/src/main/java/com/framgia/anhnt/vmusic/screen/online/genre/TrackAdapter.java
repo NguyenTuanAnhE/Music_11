@@ -20,6 +20,8 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
     private LayoutInflater mInflater;
     private List<Track> mTracks;
     private OnTrackClickListener mListener;
+    private int mPosition = -1;
+    private boolean mIsDownload;
 
     public TrackAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -30,11 +32,21 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
         mListener = listener;
     }
 
+    public void setPosition(int position, boolean isDownload) {
+        mPosition = position;
+        mIsDownload = isDownload;
+        notifyItemChanged(position);
+    }
+
+    public int getPosition() {
+        return mPosition;
+    }
+
     public void updateData(List<Track> tracks) {
         if (tracks == null) {
             return;
         }
-        mTracks = tracks;
+        mTracks.addAll(tracks);
         notifyDataSetChanged();
     }
 
@@ -48,7 +60,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Track track = mTracks.get(position);
-        holder.bindData(track);
+        holder.bindData(track, mPosition, mIsDownload);
     }
 
     @Override
@@ -82,7 +94,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
             });
         }
 
-        void bindData(Track track) {
+        void bindData(Track track, int position, boolean isDownload) {
             if (track == null) {
                 return;
             }
@@ -91,6 +103,14 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
             Glide.with(mImageAlbumCover.getContext())
                     .load(track.getArtworkUrl())
                     .into(mImageAlbumCover);
+            if (position == getAdapterPosition()) {
+                if (isDownload) {
+                    mImageDownload.setBackgroundResource(R.drawable.ic_cancel);
+                } else {
+                    mImageDownload.setBackgroundResource(R.drawable.ic_cloud_download);
+                }
+            }
+
         }
 
         @Override

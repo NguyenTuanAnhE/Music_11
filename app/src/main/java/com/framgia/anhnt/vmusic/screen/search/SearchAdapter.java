@@ -31,11 +31,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         mListener = listener;
     }
 
-    public void updateData(List<Track> tracks) {
+    public void addData(List<Track> tracks, boolean isLoadMore) {
         if (tracks == null) {
             return;
         }
-        mTracks = tracks;
+        if (isLoadMore) {
+            mTracks.addAll(tracks);
+        } else {
+            mTracks = tracks;
+        }
         notifyDataSetChanged();
     }
 
