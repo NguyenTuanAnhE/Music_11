@@ -25,6 +25,23 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+ protected void requestPermission(String[] permissions) {
+        if (!hasPermissions(this, permissions)) {
+            ActivityCompat.requestPermissions(this, permissions, PERMISSION_ALL);
+        }
+    }
+
+    protected boolean hasPermissions(Context context, String... permissions) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     protected abstract boolean getFullScreen();
 
     protected abstract boolean showHomeEnable();
